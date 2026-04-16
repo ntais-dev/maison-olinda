@@ -1,0 +1,55 @@
+[
+  {
+    "id": "1776346399661",
+    "checkIn": "2026-04-17",
+    "checkOut": "2026-04-21",
+    "adults": 2,
+    "children": 0,
+    "totalPrice": 1200,
+    "paymentId": "4HD67979W0106282G",
+    "payerEmail": "sb-uguz939002527@business.example.com",
+    "status": "Confirmed",
+    "createdAt": "2026-04-16T13:33:19.661Z"
+  },
+  {
+    "id": "1776351310858",
+    "checkIn": "2027-02-06",
+    "checkOut": "2027-04-16",
+    "firstName": "BLOCKED",
+    "lastName": "Manual Block",
+    "email": "-",
+    "totalPrice": 0,
+    "paymentId": "-",
+    "payerEmail": "-",
+    "status": "Blocked",
+    "createdAt": "2026-04-16T14:55:10.858Z"
+  },
+  {
+    "id": "1776351948753",
+    "checkIn": "2026-04-29",
+    "checkOut": "2026-06-18",
+    "adults": 2,
+    "children": 0,
+    "firstName": "erz",
+    "lastName": "rezrez",
+    "email": "rer@ere.com",
+    "totalPrice": 13500,
+    "paymentId": "PENDING",
+    "payerEmail": "-",
+    "status": "Awaiting Deposit",
+    "createdAt": "2026-04-16T15:05:48.753Z"
+  },
+  {
+    "id": "1776352545424",
+    "checkIn": "2028-12-12",
+    "checkOut": "2029-12-15",
+    "firstName": "BLOCKED",
+    "lastName": "Rénovation",
+    "email": "-",
+    "totalPrice": 0,
+    "paymentId": "-",
+    "payerEmail": "-",
+    "status": "Blocked",
+    "createdAt": "2026-04-16T15:15:45.424Z"
+  }
+]
