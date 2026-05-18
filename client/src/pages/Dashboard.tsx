@@ -29,6 +29,11 @@ const Dashboard: React.FC = () => {
   const [blockEnd, setBlockEnd] = useState('');
   const [blockReason, setBlockReason] = useState('');
 
+  // Airbnb Sync State
+  const [airbnbIcalUrl, setAirbnbIcalUrl] = useState('');
+  const [syncMessage, setSyncMessage] = useState('');
+  const [isSyncing, setIsSyncing] = useState(false);
+
   const fetchBookings = async () => {
     setLoading(true);
     try {
@@ -46,9 +51,59 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const fetchConfig = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/api/config');
+      if (response.ok) {
+        const data = await response.json();
+        setAirbnbIcalUrl(data.airbnbIcalUrl || '');
+      }
+    } catch (err) {
+      console.error('Failed to fetch config');
+    }
+  };
+
   useEffect(() => {
     fetchBookings();
+    fetchConfig();
   }, []);
+
+  const handleSaveConfig = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ airbnbIcalUrl }),
+      });
+      if (response.ok) {
+        alert('URL Airbnb enregistrée avec succès.');
+      }
+    } catch (err) {
+      alert('Erreur lors de l\'enregistrement.');
+    }
+  };
+
+  const handleManualSync = async () => {
+    setIsSyncing(true);
+    setSyncMessage('Synchronisation en cours...');
+    try {
+      const response = await fetch('http://localhost:3001/api/sync-airbnb', {
+        method: 'POST',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setSyncMessage(data.message);
+        fetchBookings();
+      } else {
+        setSyncMessage('Échec de la synchronisation.');
+      }
+    } catch (err) {
+      setSyncMessage('Erreur de connexion.');
+    } finally {
+      setIsSyncing(false);
+      setTimeout(() => setSyncMessage(''), 5000);
+    }
+  };
 
   const handleDelete = async (id: string) => {
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette entrée ?')) return;
@@ -267,6 +322,46 @@ const Dashboard: React.FC = () => {
             </table>
           </div>
         )}
+
+        {/* Airbnb Synchronization Section */}
+        <div className="sync-section">
+          <h2>Synchronisation Airbnb</h2>
+          
+          <div className="sync-grid">
+            <div className="sync-card">
+              <h3>1. Exporter vers Airbnb</h3>
+              <p>Copiez cette URL et collez-la dans Airbnb (Importer un calendrier) :</p>
+              <div className="url-display">
+                <code>http://localhost:3001/api/export-ical</code>
+                <button onClick={() => {
+                  navigator.clipboard.writeText('http://localhost:3001/api/export-ical');
+                  alert('URL copiée !');
+                }}>Copier</button>
+              </div>
+            </div>
+
+            <div className="sync-card">
+              <h3>2. Importer depuis Airbnb</h3>
+              <p>Collez ici l'URL iCal fournie par Airbnb (Exporter le calendrier) :</p>
+              <div className="sync-input-group">
+                <input 
+                  type="text" 
+                  placeholder="https://www.airbnb.com/calendar/ical/..." 
+                  value={airbnbIcalUrl}
+                  onChange={(e) => setAirbnbIcalUrl(e.target.value)}
+                />
+                <button onClick={handleSaveConfig} className="btn-save">Enregistrer</button>
+              </div>
+              <div className="sync-actions">
+                <button onClick={handleManualSync} disabled={isSyncing} className="btn-sync-now">
+                  <RefreshCw size={16} className={isSyncing ? 'spinning' : ''} />
+                  Synchroniser maintenant
+                </button>
+                {syncMessage && <span className="sync-status-msg">{syncMessage}</span>}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <style>{`
@@ -489,6 +584,104 @@ const Dashboard: React.FC = () => {
         }
         .btn-delete:hover {
           opacity: 1;
+        }
+        
+        /* Sync Styles */
+        .sync-section {
+          margin-top: 4rem;
+          padding-top: 2rem;
+          border-top: 2px solid #f5f5f0;
+        }
+        .sync-section h2 {
+          font-size: 1.5rem;
+          margin-bottom: 2rem;
+          color: var(--color-stone);
+          letter-spacing: 2px;
+        }
+        .sync-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 2rem;
+        }
+        .sync-card {
+          background: #fcfcf9;
+          padding: 1.5rem;
+          border-radius: 8px;
+          border: 1px solid #eee;
+        }
+        .sync-card h3 {
+          font-size: 1rem;
+          margin-bottom: 1rem;
+          color: var(--color-olive);
+        }
+        .sync-card p {
+          font-size: 0.85rem;
+          color: var(--color-accent);
+          margin-bottom: 1rem;
+        }
+        .url-display {
+          display: flex;
+          background: #f0f0eb;
+          padding: 0.5rem;
+          border-radius: 4px;
+          align-items: center;
+          gap: 1rem;
+        }
+        .url-display code {
+          flex: 1;
+          font-size: 0.75rem;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .url-display button, .btn-save {
+          background: var(--color-stone);
+          color: white;
+          border: none;
+          padding: 0.4rem 0.8rem;
+          border-radius: 4px;
+          font-size: 0.75rem;
+          cursor: pointer;
+        }
+        .sync-input-group {
+          display: flex;
+          gap: 0.5rem;
+          margin-bottom: 1.5rem;
+        }
+        .sync-input-group input {
+          flex: 1;
+          padding: 0.6rem;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          font-size: 0.85rem;
+        }
+        .btn-sync-now {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          background: var(--color-olive);
+          color: white;
+          border: none;
+          padding: 0.6rem 1.2rem;
+          border-radius: 4px;
+          font-weight: 600;
+          cursor: pointer;
+        }
+        .btn-sync-now:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+        .sync-status-msg {
+          display: block;
+          margin-top: 0.8rem;
+          font-size: 0.85rem;
+          color: var(--color-olive);
+          font-style: italic;
+        }
+        @media (max-width: 992px) {
+          .sync-grid {
+            grid-template-columns: 1fr;
+          }
         }
         @media (max-width: 768px) {
           .dashboard-title-area {

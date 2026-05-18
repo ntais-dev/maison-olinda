@@ -4,12 +4,16 @@ import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import fs from 'fs/promises';
 import path from 'path';
+import ical from 'ical-generator';
+import nodeIcal from 'node-ical';
+import axios from 'axios';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 const DB_PATH = path.join(process.cwd(), 'bookings.json');
+const CONFIG_PATH = path.join(process.cwd(), 'config.json');
 
 app.use(cors());
 app.use(express.json());
@@ -143,7 +147,7 @@ app.patch('/api/bookings/:id/confirm', async (req, res) => {
         subject: `✅ SÉJOUR CONFIRMÉ - Maison Sud`,
         html: `
           <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
-            <h2 style="color: #6b705c; border-bottom: 2px solid #6b705c; padding-bottom: 10px;">Réservation Confirmée</h2>
+            <h2 style="color: #0F97AA; border-bottom: 2px solid #0F97AA; padding-bottom: 10px;">Réservation Confirmée</h2>
             <p>Bonjour ${booking.firstName},</p>
             <p>Nous avons bien reçu votre acompte. Votre séjour à <strong>Olinda</strong> est désormais <strong>entièrement confirmé</strong>.</p>
             
@@ -231,7 +235,7 @@ app.post('/api/bookings', async (req, res) => {
       : `🏡 RÉSERVATION CONFIRMÉE - ${firstName} ${lastName}`,
     html: `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
-        <h2 style="color: #6b705c; border-bottom: 2px solid #6b705c; padding-bottom: 10px;">
+        <h2 style="color: #0F97AA; border-bottom: 2px solid #0F97AA; padding-bottom: 10px;">
           ${isDeposit ? 'Votre Option pour Olinda' : 'Confirmation de Réservation Olinda'}
         </h2>
         
@@ -258,7 +262,7 @@ app.post('/api/bookings', async (req, res) => {
           </tr>
           <tr style="background-color: #f5f5f0;">
             <td style="padding: 10px; font-weight: bold;">Montant Total :</td>
-            <td style="padding: 10px; font-weight: bold; color: #6b705c;">${totalPrice} €</td>
+            <td style="padding: 10px; font-weight: bold; color: #0F97AA;">${totalPrice} €</td>
           </tr>
           ${!isDeposit ? `
           <tr>
@@ -269,7 +273,7 @@ app.post('/api/bookings', async (req, res) => {
         </table>
 
         <p>Nous avons hâte de vous accueillir à la Maison Sud.</p>
-        <p style="color: #6b705c; font-style: italic;">L'équipe Maison Sud</p>
+        <p style="color: #0F97AA; font-style: italic;">L'équipe Maison Sud</p>
       </div>
     `,
   };
@@ -282,6 +286,160 @@ app.post('/api/bookings', async (req, res) => {
     res.status(201).json({ message: 'Success (Saved to DB)' });
   }
 });
+
+// --- ICAL SYNCHRONIZATION ---
+
+// Mock Airbnb endpoint for testing
+app.get('/api/mock-airbnb-ical', (res) => {
+  const mockIcal = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Airbnb Inc//Hosting Calendar 0.8.3//EN
+BEGIN:VEVENT
+DTEND;VALUE=DATE:20260615
+DTSTAMP:20240518T100000Z
+DTSTART;VALUE=DATE:20260610
+SUMMARY:Airbnb - Reserved
+UID:mock-1@airbnb.com
+END:VEVENT
+BEGIN:VEVENT
+DTEND;VALUE=DATE:20260710
+DTSTAMP:20240518T100000Z
+DTSTART;VALUE=DATE:20260705
+SUMMARY:Airbnb - Reserved
+UID:mock-2@airbnb.com
+END:VEVENT
+END:VCALENDAR`;
+  
+  res.set('Content-Type', 'text/calendar; charset=utf-8');
+  res.send(mockIcal);
+});
+
+// Export Website Bookings to iCal (for Airbnb to import)
+app.get('/api/export-ical', async (req, res) => {
+  try {
+    const data = await fs.readFile(DB_PATH, 'utf-8');
+    const bookings = JSON.parse(data);
+
+    const calendar = ical({ name: 'Maison Sud - Olinda Bookings' });
+
+    bookings.forEach((booking: any) => {
+      // Don't export already synced Airbnb bookings back to them
+      if (booking.firstName === 'AIRBNB' || booking.status === 'Cancelled') return;
+
+      calendar.createEvent({
+        start: new Date(booking.checkIn),
+        end: new Date(booking.checkOut),
+        summary: booking.firstName === 'BLOCKED' ? 'Reserved' : `Booking: ${booking.firstName} ${booking.lastName}`,
+        description: `Booking from website. ID: ${booking.id}`,
+      });
+    });
+
+    res.set('Content-Type', 'text/calendar; charset=utf-8');
+    res.set('Content-Disposition', 'attachment; filename="bookings.ics"');
+    res.send(calendar.toString());
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to generate iCal' });
+  }
+});
+
+// Update Airbnb iCal URL
+app.post('/api/config', async (req, res) => {
+  const { airbnbIcalUrl } = req.body;
+  try {
+    await fs.writeFile(CONFIG_PATH, JSON.stringify({ airbnbIcalUrl }, null, 2));
+    res.json({ message: 'Configuration updated' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update configuration' });
+  }
+});
+
+app.get('/api/config', async (req, res) => {
+  try {
+    const data = await fs.readFile(CONFIG_PATH, 'utf-8');
+    res.json(JSON.parse(data));
+  } catch (error) {
+    res.json({ airbnbIcalUrl: '' });
+  }
+});
+
+// Sync from Airbnb
+const syncAirbnb = async () => {
+  try {
+    const configData = await fs.readFile(CONFIG_PATH, 'utf-8');
+    const { airbnbIcalUrl } = JSON.parse(configData);
+
+    if (!airbnbIcalUrl) return { message: 'No Airbnb URL configured' };
+
+    const icalData = await axios.get(airbnbIcalUrl);
+    const events = nodeIcal.parseICS(icalData.data);
+
+    const bookingData = await fs.readFile(DB_PATH, 'utf-8');
+    let bookings = JSON.parse(bookingData);
+    let newBookingsCount = 0;
+
+    for (const k in events) {
+      const event = events[k];
+      if (event.type !== 'VEVENT') continue;
+
+      const checkIn = event.start.toISOString().split('T')[0];
+      const checkOut = event.end.toISOString().split('T')[0];
+
+      // Check if this Airbnb booking already exists in our system
+      const alreadyExists = bookings.some((b: any) => 
+        b.firstName === 'AIRBNB' && b.checkIn === checkIn && b.checkOut === checkOut
+      );
+
+      if (!alreadyExists) {
+        // Also check if it overlaps with a website booking (should not happen if sync is regular)
+        const overlaps = bookings.some((b: any) => {
+          const s = new Date(b.checkIn);
+          const e = new Date(b.checkOut);
+          const ns = new Date(checkIn);
+          const ne = new Date(checkOut);
+          return (ns < e && ne > s);
+        });
+
+        if (!overlaps) {
+          bookings.push({
+            id: `airbnb-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            checkIn,
+            checkOut,
+            firstName: 'AIRBNB',
+            lastName: 'Reservation',
+            email: '-',
+            totalPrice: 0,
+            paymentId: 'AIRBNB',
+            payerEmail: '-',
+            status: 'Confirmed',
+            createdAt: new Date().toISOString()
+          });
+          newBookingsCount++;
+        }
+      }
+    }
+
+    if (newBookingsCount > 0) {
+      await fs.writeFile(DB_PATH, JSON.stringify(bookings, null, 2));
+    }
+
+    return { message: `Sync complete. Added ${newBookingsCount} new Airbnb bookings.` };
+  } catch (error) {
+    console.error('Airbnb sync error:', error);
+    throw error;
+  }
+};
+
+app.post('/api/sync-airbnb', async (req, res) => {
+  try {
+    const result = await syncAirbnb();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: 'Sync failed' });
+  }
+});
+
+// Run sync every 30 minutes
+setInterval(syncAirbnb, 30 * 60 * 1000);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
