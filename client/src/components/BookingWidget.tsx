@@ -84,6 +84,7 @@ const BookingWidget: React.FC = () => {
   };
 
   const completeBooking = async (details: any = null) => {
+    const depositAmount = totalPrice / 2;
     const bookingData = { 
       checkIn: startDate?.toISOString().split('T')[0], 
       checkOut: endDate?.toISOString().split('T')[0], 
@@ -93,9 +94,11 @@ const BookingWidget: React.FC = () => {
       lastName,
       email,
       totalPrice,
+      depositAmount,
       paymentId: details?.id || 'PENDING',
       payerEmail: details?.payer?.email_address || '-',
-      status: details ? 'Confirmed' : 'Awaiting Deposit'
+      status: details ? 'Confirmed' : 'Awaiting Deposit',
+      // The server will calculate the 8-day deadline
     };
     
     try {
@@ -105,16 +108,17 @@ const BookingWidget: React.FC = () => {
         body: JSON.stringify(bookingData),
       });
       
+      const data = await response.json();
+
       if (response.ok) {
         setPaymentDetails(details);
         setSubmitted(true);
       } else {
-        const errData = await response.json();
-        alert(errData.error || 'Une erreur est survenue lors de l\'enregistrement de la réservation.');
+        alert(data.error || 'Une erreur est survenue lors de l\'enregistrement de la réservation. Veuillez vérifier vos dates.');
       }
     } catch (error) {
       console.error('Error submitting booking:', error);
-      alert('Erreur technique lors de la validation du séjour.');
+      alert('Le serveur de réservation ne répond pas. Veuillez réessayer plus tard ou nous contacter directement.');
     }
   };
 

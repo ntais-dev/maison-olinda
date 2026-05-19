@@ -1,8 +1,43 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Wifi, Tv, Utensils, Droplet, MapPin, Car, Leaf, Thermometer } from 'lucide-react';
+import { Wifi, Tv, Utensils, Droplet, MapPin, Car, Leaf, Thermometer, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const serviceData = [
+  {
+    id: 0,
+    title: "Cuisine Complète",
+    description: "Comme à la maison. Notre cuisine est entièrement équipée pour régaler de grandes tablées : four, lave-vaisselle, grand réfrigérateur, et tout le nécessaire de cuisine.",
+    items: ["Gazinière professionnelle", "Machine à café (Nespresso & Filtre)", "Appareils à raclette & fondue"],
+    image: "/images/cuisine.jpg"
+  },
+  {
+    id: 1,
+    title: "Confort & Équipements",
+    description: "Une capacité d'accueil jusqu'à 14 personnes. La maison allie le charme de l'authentique (pierres et poutres apparentes) au confort moderne le plus exigeant.",
+    items: ["5 suites avec salles d'eau privatives", "Literie de haute qualité", "Espace salon avec cheminée"],
+    image: "/images/chambre-5.jpg"
+  },
+  {
+    id: 2,
+    title: "Vue entre ciel et vallées",
+    description: "Un panorama à couper le souffle sur la vallée de la Drobie et les monts d'Ardèche. Profitez de nos terrasses aménagées pour vos moments de détente.",
+    items: ["Terrasse panoramique", "Mobilier de jardin confortable", "Calme absolu sans voisinage"],
+    image: "/images/vue.jpg"
+  },
+  {
+    id: 3,
+    title: "Piscine & Nature",
+    description: "Une grande piscine privée chauffée (10x5m) avec vue panoramique. Le terrain de 6000m² offre de nombreux espaces de détente et un accès à notre potager bio.",
+    items: ["Piscine chauffée de mai à septembre", "Bains de soleil & Parasols", "Potager et herbes aromatiques en accès libre"],
+    image: "/images/piscine-c.jpg"
+  }
+];
 
 const Services: React.FC = () => {
+  const [activeId, setActiveId] = useState(0);
+  const activeService = serviceData[activeId];
+
   return (
     <main>
       <Helmet>
@@ -11,104 +46,98 @@ const Services: React.FC = () => {
       </Helmet>
       <section className="section container">
         <div className="section-header text-center">
-          <h2>VOS ÉQUIPEMENTS & SERVICES</h2>
-          <p className="subtitle">Tout le confort moderne dans un écrin de nature</p>
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            VOS ÉQUIPEMENTS & SERVICES
+          </motion.h2>
+          <motion.p 
+            className="subtitle"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+          >
+            Tout le confort moderne dans un écrin de nature
+          </motion.p>
         </div>
 
         <div className="amenities-grid">
-          <div className="amenity-item">
-            <Leaf />
-            <span>Espace Vert</span>
-          </div>
-          <div className="amenity-item">
-            <MapPin />
-            <span>Vue sans vis-à-vis</span>
-          </div>
-          <div className="amenity-item">
-            <Tv />
-            <span>TV & Mezzanine</span>
-          </div>
-          <div className="amenity-item">
-            <Utensils />
-            <span>Cuisine équipée</span>
-          </div>
-          <div className="amenity-item">
-            <Wifi />
-            <span>Wifi Fibre</span>
-          </div>
-          <div className="amenity-item">
-            <Droplet />
-            <span>Piscine privée</span>
-          </div>
-          <div className="amenity-item">
-            <Thermometer />
-            <span>Eau chaude</span>
-          </div>
-          <div className="amenity-item">
-            <Car />
-            <span>Parking gratuit</span>
-          </div>
+          {[
+            { Icon: Leaf, label: "Espace Vert" },
+            { Icon: MapPin, label: "Vue sans vis-à-vis" },
+            { Icon: Tv, label: "TV & Mezzanine" },
+            { Icon: Utensils, label: "Cuisine équipée" },
+            { Icon: Wifi, label: "Wifi Fibre" },
+            { Icon: Droplet, label: "Piscine privée" },
+            { Icon: Thermometer, label: "Eau chaude" },
+            { Icon: Car, label: "Parking gratuit" },
+          ].map((item, index) => (
+            <motion.div 
+              key={index} 
+              className="amenity-item"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <item.Icon />
+              <span>{item.label}</span>
+            </motion.div>
+          ))}
         </div>
 
-        <div className="detailed-services">
-          <div className="service-block">
-            <div className="service-content">
-              <h3>Cuisine Complète</h3>
-              <p>Comme à la maison. Notre cuisine est entièrement équipée pour régaler de grandes tablées : four, lave-vaisselle, grand réfrigérateur, et tout le nécessaire de cuisine.</p>
-              <ul>
-                <li>Gazinière professionnelle</li>
-                <li>Machine à café (Nespresso & Filtre)</li>
-                <li>Appareils à raclette & fondue</li>
-              </ul>
-            </div>
-            <div className="service-image">
-              <img src="https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80&w=800" alt="Cuisine Olinda" />
-            </div>
+        <div className="interactive-services">
+          <div className="services-sidebar">
+            {serviceData.map((service) => (
+              <motion.button
+                key={service.id}
+                className={`sidebar-item ${activeId === service.id ? 'active' : ''}`}
+                onClick={() => setActiveId(service.id)}
+                whileHover={{ x: 10 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
+                <span className="sidebar-number">0{service.id + 1}</span>
+                <span className="sidebar-title">{service.title}</span>
+                {activeId === service.id && (
+                  <motion.div 
+                    layoutId="active-line"
+                    className="active-line"
+                  />
+                )}
+              </motion.button>
+            ))}
           </div>
 
-          <div className="service-block reverse">
-            <div className="service-content">
-              <h3>Confort & Équipements</h3>
-              <p>Une capacité d'accueil jusqu'à 14 personnes. La maison allie le charme de l'authentique (pierres et poutres apparentes) au confort moderne le plus exigeant.</p>
-              <ul>
-                <li>5 suites avec salles d'eau privatives</li>
-                <li>Literie de haute qualité</li>
-                <li>Espace salon avec cheminée</li>
-              </ul>
-            </div>
-            <div className="service-image">
-              <img src="https://images.unsplash.com/photo-1616594864847-4767a0f5e703?auto=format&fit=crop&q=80&w=800" alt="Chambre Olinda" />
-            </div>
-          </div>
-
-          <div className="service-block">
-            <div className="service-content">
-              <h3>Vue entre ciel et vallées</h3>
-              <p>Un panorama à couper le souffle sur la vallée de la Drobie et les monts d'Ardèche. Profitez de nos terrasses aménagées pour vos moments de détente.</p>
-              <ul>
-                <li>Terrasse panoramique</li>
-                <li>Mobilier de jardin confortable</li>
-                <li>Calme absolu sans voisinage</li>
-              </ul>
-            </div>
-            <div className="service-image">
-              <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=800" alt="Vue Olinda" />
-            </div>
-          </div>
-
-          <div className="service-block reverse">
-            <div className="service-content">
-              <h3>Piscine & Nature</h3>
-              <p>Une grande piscine privée chauffée (10x5m) avec vue panoramique. Le terrain de 6000m² offre de nombreux espaces de détente et un accès à notre potager bio.</p>
-              <ul>
-                <li>Piscine chauffée de mai à septembre</li>
-                <li>Bains de soleil & Parasols</li>
-                <li>Potager et herbes aromatiques en accès libre</li>
-              </ul>
-            </div>
-            <div className="service-image">
-              <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=800" alt="Piscine Olinda" />
-            </div>
+          <div className="service-display">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeId}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.4 }}
+                className="service-display-content"
+              >
+                <div className="display-image">
+                  <img src={activeService.image} alt={activeService.title} />
+                </div>
+                <div className="display-text">
+                  <h3>{activeService.title}</h3>
+                  <p>{activeService.description}</p>
+                  <ul>
+                    {activeService.items.map((item, i) => (
+                      <li key={i}>
+                        <ChevronRight className="li-icon" size={18} />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </section>
@@ -131,10 +160,6 @@ const Services: React.FC = () => {
           border: 1px solid #eee;
           transition: var(--transition);
         }
-        .amenity-item:hover {
-          border-color: var(--color-olive);
-          transform: translateY(-5px);
-        }
         .amenity-item svg {
           color: var(--color-olive);
           width: 32px;
@@ -145,79 +170,148 @@ const Services: React.FC = () => {
           font-weight: 600;
           color: var(--color-stone);
         }
-        .detailed-services {
+
+        .interactive-services {
+          display: grid;
+          grid-template-columns: 350px 1fr;
+          gap: 4rem;
+          margin-top: 6rem;
+          min-height: 500px;
+        }
+
+        .services-sidebar {
           display: flex;
           flex-direction: column;
-          gap: 6rem;
-          margin-top: 6rem;
+          gap: 1.5rem;
+          border-left: 1px solid #eee;
+          padding-left: 1rem;
         }
-        .service-block {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 4rem;
+
+        .sidebar-item {
+          display: flex;
           align-items: center;
+          gap: 1.5rem;
+          padding: 1.5rem 1rem;
+          text-align: left;
+          position: relative;
+          color: var(--color-stone);
+          opacity: 0.5;
+          transition: all 0.3s ease;
         }
-        .service-block.reverse {
-          direction: rtl;
+
+        .sidebar-item.active {
+          opacity: 1;
+          color: var(--color-olive);
         }
-        .service-block.reverse .service-content {
-          direction: ltr;
+
+        .sidebar-number {
+          font-size: 0.9rem;
+          font-weight: 700;
+          font-family: var(--font-sans);
+          color: var(--color-accent);
         }
-        .service-block h3 {
-          font-size: 2rem;
+
+        .sidebar-title {
+          font-family: var(--font-serif);
+          font-size: 1.8rem;
+          font-weight: 700;
+        }
+
+        .active-line {
+          position: absolute;
+          left: -17px;
+          top: 0;
+          bottom: 0;
+          width: 3px;
+          background-color: var(--color-olive);
+        }
+
+        .service-display {
+          position: relative;
+        }
+
+        .service-display-content {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 2.5rem;
+        }
+
+        .display-image img {
+          width: 100%;
+          height: 450px;
+          object-fit: cover;
+          border-radius: 12px;
+          box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .display-text h3 {
+          font-size: 2.5rem;
           margin-bottom: 1.5rem;
           color: var(--color-olive);
         }
-        .service-block p {
-          font-size: 1.1rem;
-          margin-bottom: 1.5rem;
-          line-height: 1.7;
+
+        .display-text p {
+          font-size: 1.15rem;
+          margin-bottom: 2rem;
+          line-height: 1.8;
+          max-width: 800px;
         }
-        .service-block ul {
-          list-style: none;
-          padding: 0;
+
+        .display-text ul {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 1rem;
         }
-        .service-block li {
-          margin-bottom: 0.8rem;
+
+        .display-text li {
           display: flex;
           align-items: center;
           gap: 0.8rem;
           font-weight: 600;
+          font-size: 1rem;
         }
-        .service-block li::before {
-          content: "•";
+
+        .li-icon {
           color: var(--color-olive);
-          font-size: 1.5rem;
+          flex-shrink: 0;
         }
-        .service-image img {
-          width: 100%;
-          height: 400px;
-          object-fit: cover;
-          border-radius: 12px;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
+
         .text-center {
           text-align: center;
         }
+
         @media (max-width: 1024px) {
+          .interactive-services {
+            grid-template-columns: 1fr;
+          }
+          .services-sidebar {
+            flex-direction: row;
+            overflow-x: auto;
+            border-left: none;
+            border-bottom: 1px solid #eee;
+            padding-left: 0;
+            padding-bottom: 1rem;
+            white-space: nowrap;
+          }
+          .active-line {
+            left: 0;
+            right: 0;
+            top: auto;
+            bottom: -11px;
+            width: auto;
+            height: 3px;
+          }
           .amenities-grid {
             grid-template-columns: repeat(2, 1fr);
           }
         }
+
         @media (max-width: 768px) {
-          .service-block {
-            grid-template-columns: 1fr;
-            gap: 2rem;
+          .display-text h3 {
+            font-size: 1.8rem;
           }
-          .service-block.reverse {
-            direction: ltr;
-          }
-          .amenities-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-          }
-          .amenity-item {
-            padding: 1.5rem;
+          .display-image img {
+            height: 300px;
           }
         }
       `}</style>

@@ -4,20 +4,21 @@ import { Helmet } from 'react-helmet-async';
 const Gallery: React.FC = () => {
   const [activeTab, setActiveTab] = useState('Tous');
 
-  const galleryItems = [
-    { id: 1, category: 'Espaces', title: 'Vue Extérieure', img: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=1000' },
-    { id: 2, category: 'Chambres', title: 'Suite Parentale 1', img: 'https://images.unsplash.com/photo-1616594864847-4767a0f5e703?auto=format&fit=crop&q=80&w=800' },
-    { id: 3, category: 'Piscine', title: 'Piscine Panoramique', img: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=800' },
-    { id: 4, category: 'Cuisine', title: 'Cuisine Équipée', img: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80&w=800' },
-    { id: 5, category: 'Espaces', title: 'Salon Authentique', img: 'https://images.unsplash.com/photo-1513519247388-4e282a142d47?auto=format&fit=crop&q=80&w=800' },
-    { id: 6, category: 'Chambres', title: 'Suite 2', img: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&q=80&w=800' },
-    { id: 7, category: 'Piscine', title: 'Espace Détente', img: 'https://images.unsplash.com/photo-1560185007-cde436f6a4d0?auto=format&fit=crop&q=80&w=800' },
-    { id: 8, category: 'Espaces', title: 'La Terrasse', img: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=800' },
+  const galleryImages = [
+    { id: 1, category: 'Espaces', title: 'Vue Extérieure', img: '/images/vue.jpg' },
+    { id: 2, category: 'Chambres', title: 'Suite Parentale 1', img: '/images/chambre-bleu.jpeg' },
+    { id: 3, category: 'Piscine', title: 'Piscine Panoramique', img: '/images/piscine-c.jpg' },
+    { id: 4, category: 'Cuisine', title: 'Cuisine Équipée', img: '/images/cuisine.jpg' },
+    { id: 5, category: 'Espaces', title: 'Salon Authentique', img: '/images/salon-__.jpg' },
+    { id: 6, category: 'Chambres', title: 'Suite 2', img: '/images/chambre2.jpeg' },
+    { id: 7, category: 'Piscine', title: 'Espace Détente', img: '/images/piscine-_.jpg' },
+    { id: 8, category: 'Espaces', title: 'La Terrasse', img: '/images/exterieur.jpg' },
   ];
 
+
   const filteredItems = activeTab === 'Tous' 
-    ? galleryItems 
-    : galleryItems.filter(item => item.category === activeTab);
+    ? galleryImages 
+    : galleryImages.filter(item => item.category === activeTab);
 
   const tabs = ['Tous', 'Espaces', 'Chambres', 'Cuisine', 'Piscine'];
 

@@ -50,8 +50,7 @@ const App: React.FC = () => {
         <header className="header">
           <nav className="container">
             <Link to="/" className="logo">
-              <HomeIcon size={24} />
-              <span>MAISON SUD</span>
+              <img src="/logo_olinda.png" alt="Olinda Logo" className="logo-img" />
             </Link>
             <ul className="nav-links">
               <li><Link to="/">La Maison</Link></li>
@@ -70,8 +69,7 @@ const App: React.FC = () => {
           <div className="container footer-grid">
             <div className="footer-brand">
               <Link to="/" className="logo light">
-                <HomeIcon size={24} />
-                <span>MAISON SUD</span>
+                <img src="/footer_logo.png" alt="Olinda Logo Footer" className="logo-img" />
               </Link>
               <p className="footer-tagline">Évasion et authenticité au cœur des Monts d'Ardèche.</p>
               <div className="social-links">
@@ -239,6 +237,17 @@ const App: React.FC = () => {
             color: inherit;
             text-decoration: none;
           }
+
+          .logo-img {
+            height: 70px;
+            width: auto;
+            object-fit: contain;
+            transition: var(--transition);
+          }
+
+          .logo:hover .logo-img {
+            transform: scale(1.05);
+          }
           
           .nav-links {
             display: flex;
@@ -280,7 +289,7 @@ const App: React.FC = () => {
           
           .hero {
             height: 60vh;
-            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=2000');
+            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('/images/exterieur.jpg');
             background-size: cover;
             background-position: center;
             display: flex;

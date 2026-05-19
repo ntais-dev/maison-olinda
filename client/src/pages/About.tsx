@@ -23,7 +23,7 @@ const About: React.FC = () => {
             </p>
           </div>
           <div className="experience-image">
-            <img src="https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&q=80&w=1000" alt="Maison Sud Extérieur" />
+            <img src="/images/vue-2.jpg" alt="Maison Sud Extérieur" />
           </div>
         </div>
       </section>
@@ -32,7 +32,7 @@ const About: React.FC = () => {
       <section className="section container">
         <div className="soul-section grid-2">
           <div className="soul-image">
-            <img src="https://images.unsplash.com/photo-1449156003053-c30670b96835?auto=format&fit=crop&q=80&w=1000" alt="Intérieur authentique" />
+            <img src="/images/salon-2.jpeg" alt="Intérieur authentique" />
           </div>
           <div className="soul-text">
             <h2>UNE MAISON, UNE HISTOIRE</h2>
@@ -106,7 +106,7 @@ const About: React.FC = () => {
           </div>
           <div className="caretaker-card-rich">
             <div className="caretaker-header">
-              <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200" alt="René" />
+              <img src="/images/Image-1.jpeg" alt="René" />
               <div>
                 <h4>René</h4>
                 <p>Votre ange gardien</p>
